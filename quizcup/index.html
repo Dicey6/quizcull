@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.85, maximum-scale=5.0" />
   <title>Quiz Cup — Answer. Get Approved. Earn.</title>
   <meta name="description" content="Quiz Cup — The ultimate Solana quiz platform. Answer questions, get approved, earn rewards." />
   <link rel="icon" href="assets/logo.png" />
@@ -14,7 +14,7 @@
   <nav class="nav">
     <div class="nav-inner">
       <a href="index.html" class="nav-logo">
-        <img src="assets/logo.png" alt="Quiz Cup Logo" />
+        <img src="assets/logo.png" alt="Quiz Cup Logo" class="nav-logo-img" />
         <span>QUIZ CUP</span>
       </a>
       <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
@@ -35,77 +35,74 @@
     <div class="hero-bg"></div>
     <div class="hero-overlay"></div>
     <div class="hero-content">
-      <div class="hero-tagline">⚽ Solana Quiz Platform</div>
-      <h1>QUIZ <span class="accent">CUP</span></h1>
-      <p class="hero-subtitle">
-        <span>Answer</span> · <span>Get Approved</span> · <span>Earn</span>
+      <div class="hero-logo-wrap animate-float">
+        <img src="assets/logo.png" alt="Quiz Cup" class="hero-logo" />
+      </div>
+      <div class="hero-tagline animate-fade-up" style="animation-delay:0.1s">⚽ Solana Meme Coin Quiz Platform</div>
+      <h1 class="animate-fade-up" style="animation-delay:0.2s">
+        QUIZ <span class="accent">CUP</span>
+      </h1>
+      <p class="hero-subtitle animate-fade-up" style="animation-delay:0.35s">
+        Answer Questions &nbsp;·&nbsp; Get Approved &nbsp;·&nbsp; Earn Rewards
       </p>
-      <div class="hero-buttons">
-        <a href="#quiz" class="btn btn-primary">⚽ Participate</a>
-        <a href="status.html" class="btn btn-outline">My Status</a>
+      <div class="hero-buttons animate-fade-up" style="animation-delay:0.5s">
+        <a href="#quiz" class="btn btn-primary btn-glow">⚽ Participate Now</a>
+        <a href="status.html" class="btn btn-outline">Check My Status</a>
       </div>
     </div>
   </section>
 
-  <!-- CONTRACT ADDRESS -->
-  <section class="ca-section" id="caSection">
+  <!-- CA + X SECTION — big prominent block -->
+  <section class="ca-hero-section" id="caSection">
     <div class="container">
-      <div class="ca-inner">
-        <span class="ca-label">CA</span>
-        <div class="ca-address" id="caAddress">Loading...</div>
-        <button class="ca-copy-btn" id="caCopyBtn">
+      <div class="ca-hero-inner reveal">
+        <p class="ca-hero-label">🪙 Contract Address</p>
+        <div class="ca-hero-address" id="caAddress">Loading...</div>
+        <button class="btn btn-ca w-full" id="caCopyBtn">
           <span id="caCopyIcon">⧉</span>
-          <span id="caCopyText">Copy</span>
+          <span id="caCopyText">Copy Contract Address</span>
         </button>
+        <!-- X button right below CA -->
+        <div id="xBlock" class="hidden">
+          <a href="#" target="_blank" rel="noopener" class="btn btn-x w-full" id="xFollowBtn">
+            <span>𝕏</span>
+            <span id="xHandle">Follow on X</span>
+          </a>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- X FOLLOW -->
-  <section class="x-section" id="xSection">
-    <div class="container">
-      <div class="x-inner">
-        <span class="x-label">Stay updated</span>
-        <a href="#" target="_blank" rel="noopener" class="x-follow-btn" id="xFollowBtn">
-          𝕏 <span id="xHandle">@QuizCup</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- CURRENT QUIZ + SUBMISSION FORM (combined) -->
+  <!-- CURRENT QUIZ + FORM -->
   <section class="section quiz-section" id="quiz">
     <div class="container">
-      <h2 class="section-title">CURRENT <span>QUIZ</span></h2>
+      <h2 class="section-title reveal">CURRENT <span>QUIZ</span></h2>
 
-      <!-- Loading -->
       <div id="quizLoading" class="loading-block">
         <div class="spinner"></div>
         <p style="margin-top:14px">Loading quiz...</p>
       </div>
 
-      <!-- No active quiz -->
-      <div id="quizEmpty" class="hidden">
+      <div id="quizEmpty" class="hidden reveal">
         <div class="quiz-card">
           <div class="no-quiz">
             <div style="font-size:2.5rem;margin-bottom:12px">⚽</div>
             <h3>No Active Quiz Right Now</h3>
-            <p>Check back soon. Follow us on X for announcements.</p>
+            <p>Follow us on X for the next announcement.</p>
           </div>
         </div>
       </div>
 
-      <!-- Active quiz + form together -->
-      <div id="quizCard" class="hidden">
+      <div id="quizCard" class="hidden reveal">
         <div class="quiz-card">
 
-          <!-- Quiz header -->
+          <!-- Header -->
           <div class="quiz-card-header">
             <h3 id="quizTitle">—</h3>
             <span class="badge badge-active">🟢 Active</span>
           </div>
 
-          <!-- Quiz body -->
+          <!-- Question + meta -->
           <div class="quiz-card-body">
             <p class="quiz-question" id="quizQuestion">—</p>
             <p class="quiz-description" id="quizDescription"></p>
@@ -120,51 +117,43 @@
                 <span class="meta-value deadline-val" id="quizDeadline">—</span>
               </div>
             </div>
+
+            <!-- COUNTDOWN TIMER -->
+            <div class="countdown-wrap" id="countdownWrap">
+              <p class="countdown-label">Time Remaining</p>
+              <div class="countdown" id="quizCountdown">
+                <div class="timer-block"><span class="timer-num" id="timerDays">00</span><span class="timer-label">Days</span></div>
+                <div class="timer-sep">:</div>
+                <div class="timer-block"><span class="timer-num" id="timerHrs">00</span><span class="timer-label">Hrs</span></div>
+                <div class="timer-sep">:</div>
+                <div class="timer-block"><span class="timer-num" id="timerMin">00</span><span class="timer-label">Min</span></div>
+                <div class="timer-sep">:</div>
+                <div class="timer-block"><span class="timer-num" id="timerSec">00</span><span class="timer-label">Sec</span></div>
+              </div>
+            </div>
           </div>
 
           <!-- Divider -->
-          <div class="quiz-form-divider">
-            <span>Submit Your Answer</span>
-          </div>
+          <div class="quiz-form-divider"><span>Submit Your Answer</span></div>
 
-          <!-- Submission form — embedded directly -->
+          <!-- Embedded form -->
           <div class="quiz-form-body" id="submissionForm">
             <div id="formAlert"></div>
 
             <div class="form-group">
               <label for="username">Username</label>
-              <input
-                type="text"
-                id="username"
-                placeholder="YourUsername"
-                maxlength="60"
-                autocomplete="off"
-              />
+              <input type="text" id="username" placeholder="YourUsername" maxlength="60" autocomplete="off" />
             </div>
-
             <div class="form-group">
               <label for="wallet">Solana Wallet Address</label>
-              <input
-                type="text"
-                id="wallet"
-                placeholder="Paste your wallet address"
-                maxlength="128"
-                autocomplete="off"
-                inputmode="text"
-              />
+              <input type="text" id="wallet" placeholder="Paste your wallet address" maxlength="128" autocomplete="off" />
             </div>
-
             <div class="form-group">
               <label for="answer">Your Answer</label>
-              <textarea
-                id="answer"
-                placeholder="Type your answer here..."
-                rows="3"
-                maxlength="2000"
-              ></textarea>
+              <textarea id="answer" placeholder="Type your answer here..." rows="3" maxlength="2000"></textarea>
             </div>
 
-            <button class="btn btn-primary w-full" id="submitBtn" onclick="submitAnswer()">
+            <button class="btn btn-primary btn-glow w-full" id="submitBtn" onclick="submitAnswer()">
               ⚽ Submit Answer
             </button>
 
@@ -178,67 +167,33 @@
 
         </div>
       </div>
-
     </div>
   </section>
 
   <!-- HOW IT WORKS -->
   <section class="section how-section">
     <div class="container">
-      <h2 class="section-title">HOW IT <span>WORKS</span></h2>
+      <h2 class="section-title reveal">HOW IT <span>WORKS</span></h2>
       <div class="steps-grid">
-        <div class="step-card">
+        <div class="step-card reveal" style="animation-delay:0.05s">
           <div class="step-number">1</div>
           <h3 class="step-title">Submit</h3>
-          <p class="step-desc">Answer the active quiz with your username and wallet.</p>
+          <p class="step-desc">Answer the active quiz with your username and Solana wallet.</p>
         </div>
-        <div class="step-card">
+        <div class="step-card reveal" style="animation-delay:0.1s">
           <div class="step-number">2</div>
           <h3 class="step-title">Review</h3>
           <p class="step-desc">The admin team reviews every submission carefully.</p>
         </div>
-        <div class="step-card">
+        <div class="step-card reveal" style="animation-delay:0.15s">
           <div class="step-number">3</div>
           <h3 class="step-title">Approve</h3>
           <p class="step-desc">Correct answers get approved manually by admin.</p>
         </div>
-        <div class="step-card">
+        <div class="step-card reveal" style="animation-delay:0.2s">
           <div class="step-number">4</div>
           <h3 class="step-title">Reward</h3>
-          <p class="step-desc">Winners get their reward sent directly to their wallet.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- RECENT WINNERS -->
-  <section class="section winners-section">
-    <div class="container">
-      <h2 class="section-title">RECENT <span>WINNERS</span></h2>
-
-      <div id="winnersLoading" class="loading-block">
-        <div class="spinner"></div>
-      </div>
-
-      <div id="winnersTable" class="hidden">
-        <div class="winners-table-wrap">
-          <table class="winners-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Username</th>
-                <th>Reward</th>
-                <th>TX</th>
-              </tr>
-            </thead>
-            <tbody id="winnersBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="winnersEmpty" class="hidden">
-        <div class="winners-table-wrap">
-          <div class="no-winners">No winners yet. Be the first! ⚽</div>
+          <p class="step-desc">Winners get rewards sent directly to their wallet.</p>
         </div>
       </div>
     </div>
@@ -275,9 +230,8 @@
         </div>
 
       </div>
-
       <div class="footer-bottom">
-        <p>© 2024 Quiz Cup. All rights reserved.</p>
+        <p>© 2026 Quiz Cup. All rights reserved.</p>
         <p class="disclaimer">Not financial advice. Rewards distributed manually.</p>
       </div>
     </div>
@@ -286,6 +240,5 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="script.js"></script>
-
 </body>
 </html>
