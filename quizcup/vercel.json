@@ -1,0 +1,9 @@
+{
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "framework": null,
+  "rewrites": [
+    { "source": "/admin",  "destination": "/admin.html"  },
+    { "source": "/status", "destination": "/status.html" }
+  ]
+}
