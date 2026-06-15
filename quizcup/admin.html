@@ -6,141 +6,95 @@
   <title>Admin — Quiz Cup</title>
   <link rel="icon" href="assets/logo.png" />
   <link rel="stylesheet" href="styles.css" />
-  <!-- Extra admin-only styles -->
   <style>
-    body { background: var(--bg); }
-    .admin-layout { display: flex; }
-    .admin-sidebar-bottom {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 16px 20px;
-      border-top: 1px solid var(--border);
-    }
     .sub-answer-full {
       white-space: pre-wrap;
       word-break: break-word;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 10px 14px;
-      font-size: 0.85rem;
+      padding: 8px 12px;
+      font-size: 0.82rem;
       color: var(--text-muted);
       margin-top: 4px;
-    }
-    .filter-bar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .filter-bar select, .filter-bar input {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 8px 14px;
-      color: var(--text);
-      font-size: 0.85rem;
-      outline: none;
-    }
-    .filter-bar select:focus, .filter-bar input:focus {
-      border-color: var(--accent);
-    }
-    .expand-row { cursor: pointer; color: var(--text-muted); font-size: 0.8rem; }
-    .expand-row:hover { color: var(--accent); }
-    .expanded-answer { display: none; }
-    .expanded-answer.open { display: table-row; }
-    @media (max-width: 768px) {
-      .admin-layout { flex-direction: column; }
-      .admin-sidebar { position: relative; width: 100%; height: auto; }
-      .admin-sidebar-bottom { position: relative; }
-      .admin-main { margin-left: 0; }
     }
   </style>
 </head>
 <body>
 
   <!-- ============================================================
-       LOGIN SCREEN — shown until password is correct
+       LOGIN SCREEN
   ============================================================ -->
   <div id="loginScreen" class="admin-login">
     <div class="admin-login-box">
       <img src="assets/logo.png" alt="Quiz Cup" />
       <h2>ADMIN <span style="color:var(--accent)">PANEL</span></h2>
       <p>Enter your admin password to continue.</p>
-
       <div id="loginAlert"></div>
-
       <div class="form-group" style="text-align:left">
         <label for="adminPassword">Password</label>
-        <input
-          type="password"
-          id="adminPassword"
-          placeholder="Enter password"
-          autocomplete="current-password"
-        />
+        <input type="password" id="adminPassword" placeholder="Enter password" autocomplete="current-password" />
       </div>
-
-      <button class="btn btn-primary w-full" onclick="adminLogin()">
-        Login
-      </button>
+      <button class="btn btn-primary w-full" onclick="adminLogin()">Login</button>
     </div>
   </div>
 
   <!-- ============================================================
-       ADMIN DASHBOARD — shown after login
+       ADMIN DASHBOARD
   ============================================================ -->
-  <div id="adminLayout" class="admin-layout" style="display:none">
+  <div id="adminLayout" class="admin-layout">
 
-    <!-- Sidebar -->
+    <!-- Top bar / Sidebar (responsive via CSS) -->
     <aside class="admin-sidebar">
+
       <div class="admin-sidebar-logo">
         <img src="assets/logo.png" alt="Quiz Cup" />
-        <span>ADMIN</span>
+        <span>QUIZ CUP ADMIN</span>
       </div>
 
-      <nav>
-        <div class="admin-nav-item active" onclick="showPage('overview')" id="nav-overview">
+      <!-- Scrollable nav tabs -->
+      <nav class="admin-nav-scroll">
+        <div class="admin-nav-item active" onclick="showPage('overview')"    id="nav-overview">
           <span class="admin-nav-icon">📊</span> Overview
         </div>
-        <div class="admin-nav-item" onclick="showPage('submissions')" id="nav-submissions">
+        <div class="admin-nav-item"        onclick="showPage('submissions')" id="nav-submissions">
           <span class="admin-nav-icon">📋</span> Submissions
         </div>
-        <div class="admin-nav-item" onclick="showPage('winners')" id="nav-winners">
+        <div class="admin-nav-item"        onclick="showPage('winners')"     id="nav-winners">
           <span class="admin-nav-icon">🏆</span> Winners
         </div>
-        <div class="admin-nav-item" onclick="showPage('quiz')" id="nav-quiz">
+        <div class="admin-nav-item"        onclick="showPage('quiz')"        id="nav-quiz">
           <span class="admin-nav-icon">⚽</span> Quiz
         </div>
-        <div class="admin-nav-item" onclick="showPage('settings')" id="nav-settings">
+        <div class="admin-nav-item"        onclick="showPage('settings')"    id="nav-settings">
           <span class="admin-nav-icon">⚙️</span> Settings
         </div>
       </nav>
 
-      <div class="admin-sidebar-bottom">
-        <a href="index.html" style="display:block;text-align:center;font-size:0.8rem;color:var(--text-muted);margin-bottom:10px;">← View Site</a>
-        <button class="btn btn-outline btn-sm w-full" onclick="adminLogout()">Logout</button>
+      <!-- Actions -->
+      <div class="admin-nav-actions">
+        <a href="index.html" target="_blank">← View Site</a>
+        <button onclick="adminLogout()">Logout</button>
       </div>
+
     </aside>
 
     <!-- Main content -->
     <main class="admin-main">
 
       <!-- ======================================================
-           PAGE: OVERVIEW
+           OVERVIEW
       ====================================================== -->
       <div class="admin-page active" id="page-overview">
         <div class="admin-page-header">
           <h2>OVERVIEW</h2>
-          <p>Snapshot of all submissions and activity.</p>
+          <p>Snapshot of all activity.</p>
         </div>
 
         <div class="admin-stats">
           <div class="stat-card">
             <div class="stat-value" id="statTotal">—</div>
-            <div class="stat-label">Total Submissions</div>
+            <div class="stat-label">Total</div>
           </div>
           <div class="stat-card">
             <div class="stat-value" style="color:#ffaa00" id="statPending">—</div>
@@ -156,31 +110,29 @@
           </div>
         </div>
 
-        <!-- Active quiz summary -->
         <div class="card">
-          <h3 style="font-family:var(--font-display);letter-spacing:0.05em;margin-bottom:16px">ACTIVE QUIZ</h3>
+          <h3 style="font-family:var(--font-display);letter-spacing:0.05em;margin-bottom:14px;font-size:1.1rem">ACTIVE QUIZ</h3>
           <div id="overviewQuiz">
             <div class="loading-block"><div class="spinner"></div></div>
           </div>
         </div>
-
       </div>
 
       <!-- ======================================================
-           PAGE: SUBMISSIONS
+           SUBMISSIONS
       ====================================================== -->
       <div class="admin-page" id="page-submissions">
         <div class="admin-page-header">
           <h2>SUBMISSIONS</h2>
-          <p>Review, approve, reject, and mark rewards.</p>
+          <p>Approve, reject, and mark rewards.</p>
         </div>
 
         <div id="submissionsAlert"></div>
 
         <div class="filter-bar">
           <select id="filterStatus" onchange="loadSubmissions()">
-            <option value="">All Statuses</option>
-            <option value="pending"  selected>Pending</option>
+            <option value="">All</option>
+            <option value="pending" selected>Pending</option>
             <option value="approved">Approved</option>
             <option value="paid">Paid</option>
             <option value="rejected">Rejected</option>
@@ -188,16 +140,13 @@
           <input
             type="text"
             id="filterSearch"
-            placeholder="Search username / wallet..."
+            placeholder="Search username / wallet…"
             oninput="loadSubmissions()"
-            style="width:220px"
           />
-          <button class="btn btn-outline btn-sm" onclick="loadSubmissions()">↺ Refresh</button>
+          <button class="btn btn-outline btn-sm" onclick="loadSubmissions()">↺</button>
         </div>
 
-        <div id="submissionsLoading" class="loading-block">
-          <div class="spinner"></div>
-        </div>
+        <div id="submissionsLoading" class="loading-block"><div class="spinner"></div></div>
 
         <div id="submissionsTable" class="hidden">
           <div class="admin-table-wrap">
@@ -223,17 +172,15 @@
       </div>
 
       <!-- ======================================================
-           PAGE: WINNERS
+           WINNERS
       ====================================================== -->
       <div class="admin-page" id="page-winners">
         <div class="admin-page-header">
           <h2>WINNERS</h2>
-          <p>All paid submissions with TX hashes.</p>
+          <p>All paid submissions.</p>
         </div>
 
-        <div id="winnersLoading" class="loading-block">
-          <div class="spinner"></div>
-        </div>
+        <div id="winnersLoading" class="loading-block"><div class="spinner"></div></div>
 
         <div id="winnersTable" class="hidden">
           <div class="admin-table-wrap">
@@ -258,46 +205,43 @@
       </div>
 
       <!-- ======================================================
-           PAGE: QUIZ MANAGEMENT
+           QUIZ MANAGEMENT
       ====================================================== -->
       <div class="admin-page" id="page-quiz">
         <div class="admin-page-header">
-          <h2>QUIZ MANAGEMENT</h2>
-          <p>Edit the active quiz or create a new one.</p>
+          <h2>QUIZ</h2>
+          <p>Create or edit the active quiz.</p>
         </div>
 
         <div id="quizAlert"></div>
 
-        <div class="card" style="max-width:680px">
-          <h3 style="font-family:var(--font-display);letter-spacing:0.05em;margin-bottom:20px">
+        <div class="card" style="max-width:640px;margin-bottom:28px">
+          <h3 style="font-family:var(--font-display);letter-spacing:0.05em;margin-bottom:16px;font-size:1.1rem">
             QUIZ DETAILS
           </h3>
 
-          <!-- Hidden field: current quiz ID (if editing) -->
           <input type="hidden" id="quizId" value="" />
 
           <div class="form-group">
-            <label for="quizTitle">Quiz Title</label>
+            <label for="quizTitle">Title</label>
             <input type="text" id="quizTitle" placeholder="e.g. Week 1 Quiz" maxlength="120" />
           </div>
-
           <div class="form-group">
             <label for="quizQuestion">Question</label>
-            <textarea id="quizQuestion" rows="3" placeholder="The quiz question shown to users..." maxlength="1000"></textarea>
+            <textarea id="quizQuestion" rows="3" placeholder="The quiz question…" maxlength="1000"></textarea>
           </div>
-
           <div class="form-group">
             <label for="quizDescription">Description (optional)</label>
-            <textarea id="quizDescription" rows="2" placeholder="Additional context or hints..." maxlength="1000"></textarea>
+            <textarea id="quizDescription" rows="2" placeholder="Additional context…" maxlength="1000"></textarea>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div class="form-group">
               <label for="quizReward">Reward</label>
               <input type="text" id="quizReward" placeholder="e.g. 50,000 $QCUP" maxlength="80" />
             </div>
             <div class="form-group">
-              <label for="quizDeadline">Deadline (optional)</label>
+              <label for="quizDeadline">Deadline</label>
               <input type="datetime-local" id="quizDeadline" />
             </div>
           </div>
@@ -306,62 +250,59 @@
             <label for="quizStatus">Status</label>
             <select id="quizStatus">
               <option value="active">Active — visible to users</option>
-              <option value="closed">Closed — hidden from users</option>
+              <option value="closed">Closed — hidden</option>
             </select>
           </div>
 
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <button class="btn btn-primary" onclick="saveQuiz()">💾 Save Quiz</button>
-            <button class="btn btn-outline" onclick="clearQuizForm()">✕ Clear Form</button>
-            <button class="btn btn-outline" onclick="loadQuizForEdit()">↺ Load Active Quiz</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="saveQuiz()">💾 Save</button>
+            <button class="btn btn-outline btn-sm" onclick="clearQuizForm()">✕ Clear</button>
+            <button class="btn btn-outline btn-sm" onclick="loadQuizForEdit()">↺ Load Active</button>
           </div>
         </div>
 
-        <!-- All quizzes list -->
-        <div style="margin-top:32px">
-          <h3 style="font-family:var(--font-display);letter-spacing:0.05em;margin-bottom:16px">ALL QUIZZES</h3>
-          <div id="allQuizzesLoading" class="loading-block hidden"><div class="spinner"></div></div>
-          <div id="allQuizzesTable" class="hidden">
-            <div class="admin-table-wrap">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Reward</th>
-                    <th>Deadline</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="allQuizzesBody"></tbody>
-              </table>
-            </div>
+        <!-- All quizzes -->
+        <h3 style="font-family:var(--font-display);letter-spacing:0.05em;margin-bottom:12px;font-size:1rem">ALL QUIZZES</h3>
+        <div id="allQuizzesLoading" class="loading-block hidden"><div class="spinner"></div></div>
+        <div id="allQuizzesTable" class="hidden">
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Reward</th>
+                  <th>Deadline</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="allQuizzesBody"></tbody>
+            </table>
           </div>
         </div>
       </div>
 
       <!-- ======================================================
-           PAGE: SETTINGS
+           SETTINGS
       ====================================================== -->
       <div class="admin-page" id="page-settings">
         <div class="admin-page-header">
           <h2>SETTINGS</h2>
-          <p>Edit site-wide content shown to users.</p>
+          <p>Edit site-wide content.</p>
         </div>
 
         <div id="settingsAlert"></div>
 
         <div class="settings-grid">
 
-          <!-- Contract Address -->
           <div class="settings-section">
             <h3>Contract Address</h3>
             <div class="form-group">
-              <label for="settingCA">Contract Address</label>
-              <input type="text" id="settingCA" placeholder="Paste Solana contract address" />
+              <label for="settingCA">Address</label>
+              <input type="text" id="settingCA" placeholder="Solana contract address" />
             </div>
             <div class="toggle-row">
-              <label>Show CA on homepage</label>
+              <label>Show on homepage</label>
               <label class="toggle">
                 <input type="checkbox" id="settingShowCA" checked />
                 <span class="toggle-slider"></span>
@@ -370,35 +311,32 @@
             <button class="btn btn-primary btn-sm mt-16" onclick="saveSettings()">Save</button>
           </div>
 
-          <!-- X Account -->
           <div class="settings-section">
-            <h3>X (Twitter) Account</h3>
+            <h3>X Account</h3>
             <div class="form-group">
-              <label for="settingXHandle">X Handle</label>
+              <label for="settingXHandle">Handle</label>
               <input type="text" id="settingXHandle" placeholder="@YourHandle" maxlength="60" />
             </div>
             <div class="form-group">
-              <label for="settingXUrl">X Profile URL</label>
+              <label for="settingXUrl">Profile URL</label>
               <input type="text" id="settingXUrl" placeholder="https://x.com/YourHandle" />
             </div>
             <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save</button>
           </div>
 
-          <!-- Assets -->
           <div class="settings-section" style="grid-column:1/-1">
-            <h3>Logo & Background</h3>
-            <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px">
-              The default logo and background are the files in <code>assets/</code>.
-              Optionally enter URLs here to override them (e.g. after uploading to a CDN or Supabase Storage).
+            <h3>Logo &amp; Background (URL override)</h3>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px">
+              Leave blank to use the default <code>assets/</code> files. Paste a URL to override.
             </p>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div class="form-group">
-                <label for="settingLogo">Logo URL (override)</label>
-                <input type="text" id="settingLogo" placeholder="https://... (leave blank for default)" />
+                <label for="settingLogo">Logo URL</label>
+                <input type="text" id="settingLogo" placeholder="https://…" />
               </div>
               <div class="form-group">
-                <label for="settingBackground">Background URL (override)</label>
-                <input type="text" id="settingBackground" placeholder="https://... (leave blank for default)" />
+                <label for="settingBackground">Background URL</label>
+                <input type="text" id="settingBackground" placeholder="https://…" />
               </div>
             </div>
             <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save</button>
@@ -410,9 +348,6 @@
     </main>
   </div>
 
-  <!-- ============================================================
-       SCRIPTS
-  ============================================================ -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="admin.js"></script>
