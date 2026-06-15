@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Check Status — Quiz Cup</title>
+  <meta name="description" content="Check the status of your Quiz Cup submission." />
+  <link rel="icon" href="assets/logo.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVIGATION
+  ============================================================ -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <img src="assets/logo.png" alt="Quiz Cup Logo" />
+        <span>QUIZ CUP</span>
+      </a>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#quiz">Current Quiz</a></li>
+        <li><a href="status.html" style="color:var(--accent)">Check Status</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       HERO
+  ============================================================ -->
+  <section class="status-hero">
+    <div class="container">
+      <h2>CHECK YOUR <span style="color:var(--accent)">STATUS</span></h2>
+      <p>Enter your username or wallet address to see your submission status.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SEARCH
+  ============================================================ -->
+  <section class="status-search-section">
+    <div class="container">
+      <div class="status-search-box">
+        <h3>FIND YOUR SUBMISSION</h3>
+
+        <div id="searchAlert"></div>
+
+        <div class="form-group">
+          <label for="searchUsername">Username</label>
+          <input
+            type="text"
+            id="searchUsername"
+            placeholder="Enter your username"
+            maxlength="60"
+            autocomplete="off"
+          />
+        </div>
+
+        <p style="text-align:center; color:var(--text-dim); font-size:0.8rem; margin: -8px 0 16px;">— or —</p>
+
+        <div class="form-group">
+          <label for="searchWallet">Wallet Address</label>
+          <input
+            type="text"
+            id="searchWallet"
+            placeholder="Paste your wallet address"
+            maxlength="128"
+            autocomplete="off"
+          />
+        </div>
+
+        <button class="btn btn-primary w-full" onclick="searchStatus()">
+          🔍 Check Status
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       RESULTS
+       Hidden until search is performed
+  ============================================================ -->
+  <section class="status-results" id="resultsSection" style="display:none">
+    <div class="container">
+
+      <!-- Loading state -->
+      <div id="resultsLoading" class="loading-block hidden">
+        <div class="spinner"></div>
+        <p style="margin-top:16px">Searching...</p>
+      </div>
+
+      <!-- No results -->
+      <div id="resultsEmpty" class="hidden text-center" style="padding:40px 0">
+        <p style="color:var(--text-muted)">No submission found. Double-check your username or wallet address.</p>
+        <a href="index.html#submit" class="btn btn-outline mt-16">Submit an Answer</a>
+      </div>
+
+      <!-- Results list (one or more submissions) -->
+      <div id="resultsList" class="results-list hidden"></div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCRIPTS
+  ============================================================ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="status.js"></script>
+
+</body>
+</html>
