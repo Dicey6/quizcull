@@ -1,5 +1,5 @@
 {
   "buildCommand": "",
-  "installCommand": "",
+  "installCommand": "cd quizcup && npm install",
   "framework": null
 }
