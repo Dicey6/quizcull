@@ -24,9 +24,92 @@
       margin-top: 4px;
     }
     .reward-sol-hint strong { color: var(--accent); }
+
+    /* ---- Toast notifications ---- */
+    #toastContainer {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 380px;
+      pointer-events: none;
+    }
+    .toast {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 13px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      font-family: var(--font-body, 'Inter', sans-serif);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      opacity: 0;
+      transform: translateX(24px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: all;
+      border: 1px solid transparent;
+      word-break: break-word;
+    }
+    .toast.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .toast-success { background: #0a2318; border-color: rgba(0,229,107,0.35); color: #b6ffd6; }
+    .toast-error   { background: #200d0d; border-color: rgba(255,77,77,0.35);  color: #ffc0c0; }
+    .toast-info    { background: #0d0d20; border-color: rgba(153,69,255,0.35); color: #d4aaff; }
+    .toast-warn    { background: #1f1500; border-color: rgba(255,170,0,0.35);  color: #ffe0a0; }
+    .toast-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .toast-body { flex: 1; }
+    .toast-title { font-weight: 700; margin-bottom: 2px; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .toast-msg  { font-weight: 400; }
+    .toast-close {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: inherit;
+      opacity: 0.5;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+      line-height: 1;
+      margin-top: 1px;
+    }
+    .toast-close:hover { opacity: 1; }
+
+    /* ---- Inline alert banners (kept for quiz/settings forms) ---- */
+    .alert { border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; margin-bottom: 12px; }
+    .alert-success { background: rgba(0,229,107,0.1); color: #b6ffd6; border: 1px solid rgba(0,229,107,0.25); }
+    .alert-error   { background: rgba(255,77,77,0.1);  color: #ffc0c0; border: 1px solid rgba(255,77,77,0.25); }
+    .alert-info    { background: rgba(153,69,255,0.1); color: #d4aaff; border: 1px solid rgba(153,69,255,0.25); }
+    .alert-warn    { background: rgba(255,170,0,0.1);  color: #ffe0a0; border: 1px solid rgba(255,170,0,0.25); }
+
+    /* ---- Debug panel ---- */
+    .debug-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 20px;
+      font-size: 0.82rem;
+    }
+    .debug-panel h4 { margin-bottom: 10px; font-size: 0.9rem; color: var(--text-muted); }
+    .debug-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .debug-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .debug-dot.ok      { background: var(--accent); }
+    .debug-dot.fail    { background: var(--red, #ff4d4d); }
+    .debug-dot.unknown { background: var(--text-muted); }
+    .debug-label { color: var(--text-muted); }
+    .debug-value { margin-left: auto; font-family: monospace; font-size: 0.78rem; color: var(--text); }
   </style>
 </head>
 <body>
+
+  <!-- Toast container (fixed, top-right) -->
+  <div id="toastContainer"></div>
 
   <!-- ============================================================
        LOGIN SCREEN
@@ -117,28 +200,47 @@
           </div>
         </div>
 
-        <!-- Payment setup reminder -->
+        <!-- System diagnostics -->
+        <div class="debug-panel">
+          <h4>⚡ SYSTEM DIAGNOSTICS</h4>
+          <div class="debug-row">
+            <div class="debug-dot" id="diagDbDot unknown"></div>
+            <span class="debug-label">Supabase connection</span>
+            <span class="debug-value" id="diagDbVal">checking…</span>
+          </div>
+          <div class="debug-row">
+            <div class="debug-dot unknown" id="diagPayDot"></div>
+            <span class="debug-label">Payment API (/api/pay)</span>
+            <span class="debug-value" id="diagPayVal">not tested</span>
+          </div>
+          <div class="debug-row">
+            <div class="debug-dot unknown" id="diagSecretDot"></div>
+            <span class="debug-label">ADMIN_API_SECRET</span>
+            <span class="debug-value" id="diagSecretVal">not tested</span>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-outline btn-sm" onclick="runDiagnostics()">🔍 Run Checks</button>
+            <button class="btn btn-outline btn-sm" onclick="testPaymentEndpoint()">🚀 Test Payment API</button>
+          </div>
+        </div>
+
+        <!-- Setup reminder -->
         <div class="card" style="border-color:var(--purple);margin-top:20px">
           <h3 style="font-family:var(--font-display);letter-spacing:0.05em;margin-bottom:10px;font-size:1rem;color:var(--purple)">
             🚀 AUTO PAYMENT SETUP
           </h3>
           <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.6">
-            For one-click payments, set these <strong style="color:var(--text)">Vercel Environment Variables</strong>
-            (Vercel Dashboard → Project → Settings → Environment Variables):
+            Set these in <strong style="color:var(--text)">Vercel → Project → Settings → Environment Variables</strong>:
           </p>
           <ul style="font-size:0.82rem;color:var(--text-muted);margin:10px 0 0 16px;line-height:1.9">
             <li><code style="color:var(--accent)">SOLANA_PRIVATE_KEY</code> — base58 private key from Phantom (Settings → Show Private Key)</li>
-            <li><code style="color:var(--accent)">ADMIN_API_SECRET</code> — must match the value in <code>config.js</code></li>
+            <li><code style="color:var(--accent)">ADMIN_API_SECRET</code> — must match <code>Jmelodies20</code> in config.js</li>
             <li><code style="color:var(--accent)">SUPABASE_URL</code> — your Supabase project URL</li>
             <li><code style="color:var(--accent)">SUPABASE_KEY</code> — your Supabase anon key</li>
-            <li><code style="color:var(--text-muted)">SOLANA_RPC</code> (optional) — custom RPC endpoint for faster sends</li>
           </ul>
           <p style="font-size:0.82rem;color:var(--text-muted);margin-top:10px">
-            Also run this SQL in Supabase →
-            <strong style="color:var(--text)">SQL Editor</strong>:
-            <code style="display:block;background:var(--bg);padding:8px 12px;border-radius:6px;margin-top:6px;font-size:0.8rem;color:var(--accent)">
-              ALTER TABLE quizzes ADD COLUMN IF NOT EXISTS reward_sol DECIMAL(18,6);
-            </code>
+            Also run in Supabase → <strong style="color:var(--text)">SQL Editor</strong>:
+            <code style="display:block;background:var(--bg);padding:8px 12px;border-radius:6px;margin-top:6px;font-size:0.8rem;color:var(--accent)">ALTER TABLE quizzes ADD COLUMN IF NOT EXISTS reward_sol DECIMAL(18,6);</code>
           </p>
         </div>
       </div>
@@ -295,7 +397,6 @@
           </div>
         </div>
 
-        <!-- All quizzes -->
         <h3 style="font-family:var(--font-display);letter-spacing:0.05em;margin-bottom:12px;font-size:1rem">ALL QUIZZES</h3>
         <div id="allQuizzesLoading" class="loading-block hidden"><div class="spinner"></div></div>
         <div id="allQuizzesTable" class="hidden">
@@ -362,7 +463,7 @@
           <div class="settings-section" style="grid-column:1/-1">
             <h3>Logo &amp; Background (URL override)</h3>
             <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px">
-              Leave blank to use the default <code>assets/</code> files. Paste a URL to override.
+              Leave blank to use the default <code>assets/</code> files.
             </p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div class="form-group">
