@@ -286,12 +286,13 @@ h3 { font-size: clamp(1.05rem, 3vw, 1.45rem); }
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
-.badge-pending  { background: rgba(255,170,0,0.12);  color: #ffaa00; }
-.badge-approved { background: rgba(0,229,107,0.12);  color: var(--accent); }
-.badge-paid     { background: rgba(255,215,0,0.12);  color: var(--gold); }
-.badge-rejected { background: rgba(255,77,77,0.12);  color: var(--red); }
-.badge-active   { background: rgba(0,229,107,0.12);  color: var(--accent); }
-.badge-closed   { background: rgba(100,100,100,0.12);color: var(--text-muted); }
+.badge-pending    { background: rgba(255,170,0,0.12);   color: #ffaa00; }
+.badge-approved   { background: rgba(0,229,107,0.12);   color: var(--accent); }
+.badge-processing { background: rgba(153,69,255,0.15);  color: var(--purple); }
+.badge-paid       { background: rgba(255,215,0,0.12);   color: var(--gold); }
+.badge-rejected   { background: rgba(255,77,77,0.12);   color: var(--red); }
+.badge-active     { background: rgba(0,229,107,0.12);   color: var(--accent); }
+.badge-closed     { background: rgba(100,100,100,0.12); color: var(--text-muted); }
 
 /* ============================================================
    ALERTS

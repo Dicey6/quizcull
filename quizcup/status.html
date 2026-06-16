@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.85, maximum-scale=5.0" />
   <title>Check Status — Quiz Cup</title>
   <meta name="description" content="Check the status of your Quiz Cup submission." />
   <link rel="icon" href="assets/logo.png" />
@@ -10,13 +10,11 @@
 </head>
 <body>
 
-  <!-- ============================================================
-       NAVIGATION
-  ============================================================ -->
+  <!-- NAV -->
   <nav class="nav">
     <div class="nav-inner">
       <a href="index.html" class="nav-logo">
-        <img src="assets/logo.png" alt="Quiz Cup Logo" />
+        <img src="assets/logo.png" alt="Quiz Cup Logo" class="nav-logo-img" />
         <span>QUIZ CUP</span>
       </a>
 
@@ -32,22 +30,22 @@
     </div>
   </nav>
 
-  <!-- ============================================================
-       HERO
-  ============================================================ -->
+  <!-- HERO -->
   <section class="status-hero">
     <div class="container">
+      <div class="hero-logo-wrap" style="margin-bottom:14px">
+        <img src="assets/logo.png" alt="Quiz Cup"
+          style="width:64px;height:auto;margin:0 auto;filter:drop-shadow(0 0 14px rgba(0,229,107,0.55)) drop-shadow(0 0 28px rgba(153,69,255,0.35))" />
+      </div>
       <h2>CHECK YOUR <span style="color:var(--accent)">STATUS</span></h2>
-      <p>Enter your username or wallet address to see your submission status.</p>
+      <p>Enter your username or wallet address to track your submission.</p>
     </div>
   </section>
 
-  <!-- ============================================================
-       SEARCH
-  ============================================================ -->
+  <!-- SEARCH -->
   <section class="status-search-section">
     <div class="container">
-      <div class="status-search-box">
+      <div class="status-search-box reveal">
         <h3>FIND YOUR SUBMISSION</h3>
 
         <div id="searchAlert"></div>
@@ -63,7 +61,7 @@
           />
         </div>
 
-        <p style="text-align:center; color:var(--text-dim); font-size:0.8rem; margin: -8px 0 16px;">— or —</p>
+        <p style="text-align:center;color:var(--text-dim);font-size:0.78rem;margin:-4px 0 14px">— or —</p>
 
         <div class="form-group">
           <label for="searchWallet">Wallet Address</label>
@@ -76,41 +74,44 @@
           />
         </div>
 
-        <button class="btn btn-primary w-full" onclick="searchStatus()">
+        <button class="btn btn-primary btn-glow w-full" onclick="searchStatus()">
           🔍 Check Status
         </button>
       </div>
     </div>
   </section>
 
-  <!-- ============================================================
-       RESULTS
-       Hidden until search is performed
-  ============================================================ -->
+  <!-- RESULTS -->
   <section class="status-results" id="resultsSection" style="display:none">
     <div class="container">
 
-      <!-- Loading state -->
       <div id="resultsLoading" class="loading-block hidden">
         <div class="spinner"></div>
-        <p style="margin-top:16px">Searching...</p>
+        <p style="margin-top:14px">Searching...</p>
       </div>
 
-      <!-- No results -->
       <div id="resultsEmpty" class="hidden text-center" style="padding:40px 0">
-        <p style="color:var(--text-muted)">No submission found. Double-check your username or wallet address.</p>
-        <a href="index.html#submit" class="btn btn-outline mt-16">Submit an Answer</a>
+        <p style="color:var(--text-muted);margin-bottom:16px">
+          No submission found. Double-check your username or wallet address.
+        </p>
+        <a href="index.html#quiz" class="btn btn-outline">⚽ Submit an Answer</a>
       </div>
 
-      <!-- Results list (one or more submissions) -->
       <div id="resultsList" class="results-list hidden"></div>
 
     </div>
   </section>
 
-  <!-- ============================================================
-       SCRIPTS
-  ============================================================ -->
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-bottom" style="border-top:none;padding-top:0">
+        <p>© 2026 Quiz Cup. All rights reserved.</p>
+        <p class="disclaimer">Not financial advice. Rewards distributed manually.</p>
+      </div>
+    </div>
+  </footer>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="status.js"></script>

@@ -12,8 +12,8 @@ const db = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
 ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   setupNavToggle();
+  setupScrollReveal();
 
-  /* Allow pressing Enter in either search field to search */
   document.getElementById('searchUsername').addEventListener('keydown', e => {
     if (e.key === 'Enter') searchStatus();
   });
@@ -27,6 +27,20 @@ function setupNavToggle() {
   const links  = document.getElementById('navLinks');
   if (!toggle || !links) return;
   toggle.addEventListener('click', () => links.classList.toggle('open'));
+  links.querySelectorAll('a').forEach(a =>
+    a.addEventListener('click', () => links.classList.remove('open'))
+  );
+}
+
+function setupScrollReveal() {
+  const els = document.querySelectorAll('.reveal');
+  if (!els.length) return;
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  els.forEach(el => observer.observe(el));
 }
 
 /* ============================================================

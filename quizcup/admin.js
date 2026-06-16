@@ -11,7 +11,6 @@ const db = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
    LOGIN
 ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-  /* Allow pressing Enter in password field */
   const pwInput = document.getElementById('adminPassword');
   if (pwInput) {
     pwInput.addEventListener('keydown', e => {
@@ -27,7 +26,6 @@ function adminLogin() {
   if (pw === CONFIG.ADMIN_PASSWORD) {
     document.getElementById('loginScreen').style.display  = 'none';
     document.getElementById('adminLayout').style.display  = 'flex';
-    /* Load initial data */
     loadOverview();
     loadSubmissions();
     loadWinners();
@@ -50,20 +48,15 @@ function adminLogout() {
    SIDEBAR NAVIGATION
 ============================================================ */
 function showPage(name) {
-  /* Hide all pages */
   document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
-  /* Deactivate all nav items */
   document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
 
-  /* Show target page */
   const page = document.getElementById(`page-${name}`);
   if (page) page.classList.add('active');
 
-  /* Activate nav item */
   const nav = document.getElementById(`nav-${name}`);
   if (nav) nav.classList.add('active');
 
-  /* Lazy-load data for the page */
   if (name === 'overview')     loadOverview();
   if (name === 'submissions')  loadSubmissions();
   if (name === 'winners')      loadWinners();
@@ -76,16 +69,13 @@ function showPage(name) {
 ============================================================ */
 async function loadOverview() {
   try {
-    /* Fetch all submission counts */
-    const { data: allSubs } = await db
-      .from('submissions')
-      .select('status');
+    const { data: allSubs } = await db.from('submissions').select('status');
 
     if (allSubs) {
-      const total    = allSubs.length;
-      const pending  = allSubs.filter(s => s.status === 'pending').length;
-      const approved = allSubs.filter(s => s.status === 'approved').length;
-      const paid     = allSubs.filter(s => s.status === 'paid').length;
+      const total      = allSubs.length;
+      const pending    = allSubs.filter(s => s.status === 'pending').length;
+      const approved   = allSubs.filter(s => s.status === 'approved').length;
+      const paid       = allSubs.filter(s => s.status === 'paid').length;
 
       document.getElementById('statTotal').textContent    = total;
       document.getElementById('statPending').textContent  = pending;
@@ -93,7 +83,6 @@ async function loadOverview() {
       document.getElementById('statPaid').textContent     = paid;
     }
 
-    /* Fetch active quiz */
     const { data: quiz } = await db
       .from('quizzes')
       .select('*')
@@ -113,14 +102,18 @@ async function loadOverview() {
       : 'No deadline';
 
     el.innerHTML = `
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px">
         <div>
           <div class="stat-label">Title</div>
           <div style="margin-top:4px;font-weight:600">${escapeHtml(quiz.title)}</div>
         </div>
         <div>
-          <div class="stat-label">Reward</div>
+          <div class="stat-label">Display Reward</div>
           <div style="margin-top:4px;color:var(--gold);font-weight:600">${escapeHtml(quiz.reward || '—')}</div>
+        </div>
+        <div>
+          <div class="stat-label">SOL Amount</div>
+          <div style="margin-top:4px;color:var(--accent);font-weight:600">${quiz.reward_sol ? quiz.reward_sol + ' SOL' : '—'}</div>
         </div>
         <div>
           <div class="stat-label">Deadline</div>
@@ -160,20 +153,17 @@ async function loadSubmissions() {
 
     let query = db
       .from('submissions')
-      .select('*, quizzes(title, reward)')
+      .select('*, quizzes(title, reward, reward_sol)')
       .order('created_at', { ascending: false })
       .limit(200);
 
-    if (statusFilter) {
-      query = query.eq('status', statusFilter);
-    }
+    if (statusFilter) query = query.eq('status', statusFilter);
 
     const { data, error } = await query;
 
     loading.classList.add('hidden');
     if (error) throw error;
 
-    /* Client-side search filter */
     const filtered = searchFilter
       ? data.filter(r =>
           r.username?.toLowerCase().includes(searchFilter) ||
@@ -199,25 +189,31 @@ async function loadSubmissions() {
         ? (row.answer.length > 60 ? row.answer.slice(0, 60) + '…' : row.answer)
         : '';
 
-      /* Action buttons depend on current status */
       let actions = '';
       if (row.status === 'pending') {
         actions = `
           <div class="admin-action-btns">
             <button class="btn btn-primary btn-sm" onclick="updateStatus(${row.id}, 'approved')">✓ Approve</button>
-            <button class="btn btn-danger btn-sm" onclick="updateStatus(${row.id}, 'rejected')">✕ Reject</button>
+            <button class="btn btn-danger btn-sm"  onclick="updateStatus(${row.id}, 'rejected')">✕ Reject</button>
           </div>`;
       } else if (row.status === 'approved') {
+        const hasSolAmount = row.quizzes?.reward_sol > 0;
         actions = `
           <div class="admin-action-btns">
-            <div class="tx-input-row">
-              <input type="text" id="tx-${row.id}" placeholder="TX Hash" title="Paste TX hash then click Pay" />
-              <button class="btn btn-gold btn-sm" onclick="markPaid(${row.id})">🏆 Pay</button>
-            </div>
-            <button class="btn btn-danger btn-sm" onclick="updateStatus(${row.id}, 'rejected')">✕ Reject</button>
+            ${hasSolAmount
+              ? `<button class="btn btn-gold btn-sm" onclick="sendPayment(${row.id})">🚀 Send Payment</button>`
+              : `<div style="font-size:0.78rem;color:var(--gold);margin-bottom:6px">⚠️ Set reward_sol on quiz first</div>`
+            }
+            <button class="btn btn-outline btn-sm" onclick="markPaidManual(${row.id})">📋 Manual TX</button>
+            <button class="btn btn-danger btn-sm"  onclick="updateStatus(${row.id}, 'rejected')">✕ Reject</button>
           </div>`;
+      } else if (row.status === 'processing') {
+        actions = `<span style="color:var(--purple);font-size:0.85rem">⏳ Sending…</span>`;
       } else if (row.status === 'paid') {
-        actions = `<span style="color:var(--gold);font-size:0.8rem">✅ Paid</span>`;
+        const txLink = row.tx_hash
+          ? `<a href="https://solscan.io/tx/${row.tx_hash}" target="_blank" rel="noopener" class="tx-link" style="font-size:0.78rem">View TX ↗</a>`
+          : '';
+        actions = `<span style="color:var(--gold);font-size:0.8rem">✅ Paid ${txLink}</span>`;
       } else if (row.status === 'rejected') {
         actions = `
           <div class="admin-action-btns">
@@ -252,7 +248,6 @@ async function loadSubmissions() {
   }
 }
 
-/* Toggle full answer text */
 function toggleAnswer(btn) {
   const full = btn.getAttribute('data-full');
   const existing = btn.nextElementSibling;
@@ -289,20 +284,55 @@ async function updateStatus(id, newStatus) {
   }
 }
 
-/* Mark a submission as paid with TX hash */
-async function markPaid(id) {
-  const txInput = document.getElementById(`tx-${id}`);
-  const txHash  = txInput ? txInput.value.trim() : '';
+/* ============================================================
+   AUTO PAYMENT — calls Vercel serverless /api/pay
+============================================================ */
+async function sendPayment(id) {
+  if (!confirm('Send SOL to this user\'s wallet? This broadcasts a real Solana transaction.')) return;
 
-  if (!txHash) {
-    showSubmissionsAlert('Please enter the TX hash before marking as paid.', 'error');
-    return;
+  const alertEl = document.getElementById('submissionsAlert');
+  alertEl.innerHTML = '<div class="alert alert-info">⏳ Sending transaction… do not close this tab.</div>';
+
+  try {
+    const response = await fetch('/api/pay', {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${CONFIG.ADMIN_API_SECRET}`
+      },
+      body: JSON.stringify({ submissionId: id })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data.error || 'Payment failed');
+
+    alertEl.innerHTML = `
+      <div class="alert alert-success">
+        🏆 Payment sent! <strong>${data.amount} SOL</strong>
+        — <a href="https://solscan.io/tx/${data.txHash}" target="_blank" rel="noopener"
+             style="color:inherit;text-decoration:underline">View on Solscan ↗</a>
+      </div>`;
+
+    loadSubmissions();
+    loadOverview();
+    loadWinners();
+
+  } catch (err) {
+    alertEl.innerHTML = `<div class="alert alert-error">❌ ${err.message}</div>`;
+    console.error('Payment error:', err);
   }
+}
+
+/* Manual TX fallback: admin pastes TX hash themselves */
+async function markPaidManual(id) {
+  const txHash = prompt('Paste the Solana TX signature (optional — leave blank to just mark paid):');
+  if (txHash === null) return; /* cancelled */
 
   try {
     const { error } = await db
       .from('submissions')
-      .update({ status: 'paid', tx_hash: txHash })
+      .update({ status: 'paid', tx_hash: txHash.trim() || null })
       .eq('id', id);
 
     if (error) throw error;
@@ -312,7 +342,6 @@ async function markPaid(id) {
     loadOverview();
     loadWinners();
   } catch (err) {
-    console.error('Mark paid error:', err);
     showSubmissionsAlert(`Failed: ${err.message}`, 'error');
   }
 }
@@ -320,7 +349,7 @@ async function markPaid(id) {
 function showSubmissionsAlert(msg, type) {
   const el = document.getElementById('submissionsAlert');
   el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
-  setTimeout(() => { el.innerHTML = ''; }, 4000);
+  setTimeout(() => { el.innerHTML = ''; }, 5000);
 }
 
 /* ============================================================
@@ -341,7 +370,7 @@ async function loadWinners() {
   try {
     const { data, error } = await db
       .from('submissions')
-      .select('*, quizzes(title, reward)')
+      .select('*, quizzes(title, reward, reward_sol)')
       .eq('status', 'paid')
       .order('created_at', { ascending: false });
 
@@ -362,6 +391,10 @@ async function loadWinners() {
         ? `${row.wallet.slice(0,6)}…${row.wallet.slice(-4)}`
         : '—';
 
+      const rewardDisplay = row.quizzes?.reward_sol
+        ? `${row.quizzes.reward_sol} SOL`
+        : (row.quizzes?.reward || '—');
+
       const txLink = row.tx_hash
         ? `<a href="https://solscan.io/tx/${row.tx_hash}" target="_blank" rel="noopener" class="tx-link">${row.tx_hash.slice(0,10)}…</a>`
         : '—';
@@ -372,7 +405,7 @@ async function loadWinners() {
           <td style="font-weight:600;color:var(--gold)">${escapeHtml(row.username)}</td>
           <td style="font-family:'Courier New',monospace;font-size:0.8rem;color:var(--text-muted)"
               title="${escapeHtml(row.wallet)}">${wallet}</td>
-          <td style="color:var(--accent);font-weight:600">${escapeHtml(row.quizzes?.reward || '—')}</td>
+          <td style="color:var(--accent);font-weight:600">${escapeHtml(rewardDisplay)}</td>
           <td>${txLink}</td>
         </tr>
       `;
@@ -400,7 +433,6 @@ async function loadQuizForEdit() {
       .maybeSingle();
 
     if (error || !data) return;
-
     fillQuizForm(data);
   } catch (err) {
     console.error('Load quiz error:', err);
@@ -441,6 +473,7 @@ async function loadAllQuizzes() {
         <tr>
           <td style="font-weight:600">${escapeHtml(quiz.title)}</td>
           <td style="color:var(--gold)">${escapeHtml(quiz.reward || '—')}</td>
+          <td style="color:var(--accent);font-size:0.85rem">${quiz.reward_sol ? quiz.reward_sol + ' SOL' : '—'}</td>
           <td style="color:var(--text-muted);font-size:0.85rem">${deadline}</td>
           <td><span class="badge badge-${quiz.status}">${quiz.status}</span></td>
           <td>
@@ -470,9 +503,9 @@ function fillQuizForm(quiz) {
   document.getElementById('quizQuestion').value     = quiz.question || '';
   document.getElementById('quizDescription').value  = quiz.description || '';
   document.getElementById('quizReward').value       = quiz.reward || '';
+  document.getElementById('quizRewardSol').value    = quiz.reward_sol || '';
   document.getElementById('quizStatus').value       = quiz.status || 'active';
   if (quiz.deadline) {
-    /* Format for datetime-local input: YYYY-MM-DDTHH:MM */
     const d = new Date(quiz.deadline);
     const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
       .toISOString()
@@ -488,7 +521,6 @@ async function editQuiz(id) {
     const { data, error } = await db.from('quizzes').select('*').eq('id', id).single();
     if (error || !data) return;
     fillQuizForm(data);
-    /* Scroll to form */
     document.getElementById('quizTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
   } catch (err) {
     console.error('Edit quiz error:', err);
@@ -497,7 +529,6 @@ async function editQuiz(id) {
 
 async function setQuizStatus(id, newStatus) {
   try {
-    /* If activating, close all other active quizzes first */
     if (newStatus === 'active') {
       await db.from('quizzes').update({ status: 'closed' }).eq('status', 'active');
     }
@@ -516,29 +547,32 @@ async function saveQuiz() {
   const question    = document.getElementById('quizQuestion').value.trim();
   const description = document.getElementById('quizDescription').value.trim();
   const reward      = document.getElementById('quizReward').value.trim();
+  const rewardSolRaw = document.getElementById('quizRewardSol').value.trim();
   const deadline    = document.getElementById('quizDeadline').value || null;
   const status      = document.getElementById('quizStatus').value;
   const alertDiv    = document.getElementById('quizAlert');
 
   alertDiv.innerHTML = '';
 
-  if (!title)    return alertDiv.innerHTML = '<div class="alert alert-error">Title is required.</div>';
-  if (!question) return alertDiv.innerHTML = '<div class="alert alert-error">Question is required.</div>';
+  if (!title)    return (alertDiv.innerHTML = '<div class="alert alert-error">Title is required.</div>');
+  if (!question) return (alertDiv.innerHTML = '<div class="alert alert-error">Question is required.</div>');
+
+  const reward_sol = rewardSolRaw ? parseFloat(rewardSolRaw) : null;
+  if (rewardSolRaw && (isNaN(reward_sol) || reward_sol <= 0)) {
+    return (alertDiv.innerHTML = '<div class="alert alert-error">SOL amount must be a positive number (e.g. 0.5).</div>');
+  }
 
   try {
-    /* If new quiz is active, close all other active ones first */
     if (status === 'active') {
       await db.from('quizzes').update({ status: 'closed' }).eq('status', 'active');
     }
 
-    const payload = { title, question, description, reward, deadline, status };
+    const payload = { title, question, description, reward, reward_sol, deadline, status };
 
     let error;
     if (id) {
-      /* Update existing */
       ({ error } = await db.from('quizzes').update(payload).eq('id', id));
     } else {
-      /* Insert new */
       ({ error } = await db.from('quizzes').insert(payload));
     }
 
@@ -561,6 +595,7 @@ function clearQuizForm() {
   document.getElementById('quizQuestion').value     = '';
   document.getElementById('quizDescription').value  = '';
   document.getElementById('quizReward').value       = '';
+  document.getElementById('quizRewardSol').value    = '';
   document.getElementById('quizDeadline').value     = '';
   document.getElementById('quizStatus').value       = 'active';
 }
@@ -578,11 +613,11 @@ async function loadSettings() {
 
     if (error || !data) return;
 
-    document.getElementById('settingCA').value        = data.contract_address || '';
-    document.getElementById('settingShowCA').checked  = data.show_ca !== false;
-    document.getElementById('settingXHandle').value   = data.x_handle || '';
-    document.getElementById('settingXUrl').value      = data.x_url || '';
-    document.getElementById('settingLogo').value      = data.logo || '';
+    document.getElementById('settingCA').value         = data.contract_address || '';
+    document.getElementById('settingShowCA').checked   = data.show_ca !== false;
+    document.getElementById('settingXHandle').value    = data.x_handle || '';
+    document.getElementById('settingXUrl').value       = data.x_url || '';
+    document.getElementById('settingLogo').value       = data.logo || '';
     document.getElementById('settingBackground').value = data.background || '';
 
   } catch (err) {
@@ -604,11 +639,7 @@ async function saveSettings() {
   };
 
   try {
-    /* Upsert: update row id=1, or insert if it doesn't exist */
-    const { error } = await db
-      .from('settings')
-      .upsert({ id: 1, ...payload });
-
+    const { error } = await db.from('settings').upsert({ id: 1, ...payload });
     if (error) throw error;
 
     alertDiv.innerHTML = '<div class="alert alert-success">✅ Settings saved.</div>';
@@ -625,10 +656,11 @@ async function saveSettings() {
 ============================================================ */
 function statusLabel(s) {
   const labels = {
-    pending:  '⏳ Pending',
-    approved: '✅ Approved',
-    paid:     '🏆 Paid',
-    rejected: '❌ Rejected'
+    pending:    '⏳ Pending',
+    approved:   '✅ Approved',
+    processing: '⚡ Sending',
+    paid:       '🏆 Paid',
+    rejected:   '❌ Rejected'
   };
   return labels[s] || s;
 }
